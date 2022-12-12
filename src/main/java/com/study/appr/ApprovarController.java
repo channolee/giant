@@ -72,6 +72,7 @@ public class ApprovarController {
 	 * memberVO login = approvarService.login(vo);
 	 * 
 	 * return "appr/list"; }
+	 * 에베베베벱베베ㅔ
 	 */
 	
 	@RequestMapping("logout")
