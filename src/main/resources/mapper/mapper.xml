@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper">
+
+	<resultMap type="map" id="mapList">
+		<result column="seq" property="seq"/>
+		<result column="mem_id" property="memId"/>
+		<result column="mem_name" property="memName"/>
+		<result column="board_subject" property="boardSubject"/>
+		<result column="board_content" property="boardContent"/>
+		<result column="reg_date" property="regDate"/>
+		<result column="upt_date" property="uptDate"/>
+		<result column="view_cnt" property="viewCnt"/>
+	</resultMap>
+	
+	<sql id="search">
+		<choose>
+			<when test="search_type == 'name'">
+				and mem_name like '%'||#{keyword}||'%'
+			</when>
+		    <when test="search_type == 'subject'">
+				and board_subject like '%'||#{keyword}||'%'
+			</when>
+			<when test="search_type == 'content'">
+				and (board_subject like '%'||#{keyword}||'%' 
+				or board_content like '%'||#{keyword}||'%')
+			</when>
+		</choose>
+		<if test="startDate != null and startDate != ''"> 
+			and to_char(reg_date, 'yyyy-MM-dd') between #{startDate} and #{endDate}	
+		</if>
+	</sql>
+
+	<select id="list" parameterType="map" resultMap="mapList">
+		select
+			rnum
+			,seq
+			,mem_id
+			,mem_name
+			,board_subject
+			,board_content
+			,reg_date
+			,upt_date
+			,view_cnt 
+		from (select row_number() over(order by seq desc)
+				rnum
+				,seq
+				,mem_id
+				,mem_name
+				,board_subject
+				,board_content
+				,reg_date
+				,upt_date
+				,view_cnt 	
+				from board_study where 1=1
+				<include refid="search"/>
+				) where rnum between ${pageBegin} and ${pageEnd}			
+	</select>
+	
+	<select id="pageMap" resultType="int" parameterType="map">
+		select count(seq) from board_study where 1=1
+		<include refid="search"/>
+	</select>
+	
+	<select id="listSeq" resultType="integer">
+		select nvl(max(seq), 0)+1 from board_study
+	</select>
+	
+	<insert id="upload" parameterType="map">
+		insert into file_study_table values
+		(
+			(SELECT NVL(MAX(FILE_SEQ),0)+1 FROM file_study_table),
+			#{realName},
+			#{saveName},
+			sysdate,
+			#{filePath},
+			#{listSeq}
+		)
+	</insert>
+	
+	<insert id="insert" parameterType="map">
+		insert into board_study(
+            seq,
+			mem_name,
+			mem_id,
+			board_subject,
+			board_content, 
+			reg_date,
+			view_cnt) 
+		values(
+            #{seq},
+			#{name},
+			#{id},
+			#{subject},
+			#{content},
+			sysdate,
+			0)
+	</insert>
+	
+	<select id="map" parameterType="integer" resultMap="mapList">
+		select
+         seq
+         ,mem_id
+         ,mem_name
+         ,board_subject
+         ,board_content
+         ,reg_date
+         ,upt_date
+         ,view_cnt
+      from board_study where seq = #{seq} 
+	</select>
+	
+	<update id="update" parameterType="map">
+		update board_study
+		set
+			 seq = #{seq}
+	         ,mem_id = #{id}
+	         ,mem_name = #{name}
+	         ,board_subject = #{subject}
+	         ,board_content = #{content}
+	         ,upt_date = sysdate
+	         ,view_cnt = 0
+	    where seq = #{seq}
+	</update>
+	
+	<select id="fileList" resultType="map" parameterType="integer">
+		select
+			file_seq,
+			real_name,
+			save_name,
+			reg_date,
+			save_path,
+			list_seq
+		from file_study_table
+		where list_seq = #{seq}
+	</select>
+	
+	<delete id="delete" parameterType="integer">
+		delete from
+		board_study
+		where seq = #{seq}
+	</delete>
+	
+	<select id="mi_list" resultMap="mapList">
+		select
+			seq,
+			mem_name,
+			mem_id,
+			board_subject,
+			board_content,
+         	reg_date,
+         	upt_date,
+         	view_cnt
+         from board_study
+         order by seq desc
+	</select>
+
+	
+</mapper>

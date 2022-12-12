@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member_mapper">
+
+	<select id ="loginCheck" parameterType="vo.memberVO" resultType="vo.memberVO">
+		select 
+			member_id, 
+			member_pwd, 
+			member_name, 
+			member_rank,
+				case 
+				when member_rank = '1' then '부장'
+				when member_rank = '2' then '과장'
+				when member_rank = '3' then '대리'
+				when member_rank = '4' then '사원'
+				else 'unknown'
+				end as member_rank_kor
+		from cn_member 
+			where member_id = #{member_id}
+	</select>
+
+	<select id="list" parameterType="vo.approvalVO" resultType="vo.approvalVO">
+		select 
+			appr_no, 
+			appr_id,
+			(select member_name from cn_member mem where mem.member_id = app.appr_id) 
+			appr_subject, 
+			appr_reg_date, 
+			appr_sign_date,
+			decode(appr_sign_state, 'wait', '결재대기', 'save','임시저장', 'ing','결재중', 'end','결재완료', 'ret','반려') appr_sign_state, 
+			appr_sign_person,
+			(select member_name from cn_member mem where mem.member_id = app.appr_sign_person)
+			appr_name 
+		from cn_approval app where 1 = 1
+		
+		<choose>
+			<when test="search_type == 'name'">
+				and appr_id like '%'||#{search_text}||'%'
+			</when>
+			<when test="search_type == 'subject'">
+				and (appr_subject like '%'||#{search_text}||'%'
+				or appr_content like '%'||#{search_text}||'%') 
+			</when>
+			<when test="search_type == 'app'">
+				and appr_sign_person like '%'||#{search_text}||'%' 
+			</when>
+		</choose>
+
+		<if test="searchStatus != 'state' and searchStatus != null and searchStatus != ''">
+			and appr_sign_state = #{searchStatus} 
+		</if>
+		<if test="startDate != null and startDate != ''">
+			and to_char(appr_reg_date, 'yyyy-MM-dd') between #{startDate} and #{endDate} 
+		</if>
+		order by appr_no desc 
+		</select>
+	
+	<insert id="insert" parameterType="vo.approvalVO">
+		insert into cn_approval(
+            appr_no,
+			appr_id,
+			appr_subject,
+			appr_reg_date,
+            appr_content,
+            appr_sign_state 
+            ) 
+		values(
+            (select nvl(max(appr_no), 0) +1 from cn_approval),
+			#{appr_id},
+			#{appr_subject},
+            sysdate,
+			#{appr_content},
+			#{status}
+			)
+	</insert>
+	
+	<select id="number" resultType="integer">
+		select nvl(max(appr_no), 0) +1 from cn_approval 
+	</select>
+	
+	<select id="detail" parameterType="integer" resultType="vo.approvalVO">
+		select
+	        appr_no,
+	        appr_id,
+	        (select member_name from cn_member mem where mem.member_id = app.appr_id)
+	        appr_name,
+	        appr_subject,
+	        appr_content,
+	        appr_reg_date,
+	        appr_content,
+	        appr_sign_state
+        from cn_approval app where appr_no = #{appr_no} 
+	</select>
+	
+	<!-- <insert id="history_list" parameterType="vo.historyVO">
+		insert into cn_history(
+			(select nvl(max(his_seq), 0)+1 
+		from cn_history 
+		where appr__no = #{appr__no}), #{appr_no}, sysdate, #{login_id}, #{status}) 
+	</insert> -->
+				
+	<!-- <select id="history" parameterType="integer" resultType="vo.historyVO">
+		select 
+			history_no, 
+			appr__no, 
+			history_sign_date, 
+			history_sign_person, 
+			(select member_name from cn_member mem where mem.member_id = his.history_sign_person)  
+			history_sign_state, 
+				case 
+				when history_sign_state = 'save' then '임시저장'
+				when history_sign_state = 'wait' then '결재대기'
+				when history_sign_state = 'ing' then '결재중'
+				when history_sign_state = 'end' then '결재완료'
+				when history_sign_state = 'ret' then '반려'
+				else 'unknown'
+				end as history_sign_state_kor
+		from cn_history where appr_no = #{appr_no}
+		order by his_seq desc 
+	</select>		 -->
+	
+	<update id="update" parameterType="vo.approvalVO">
+		update cn_approval set 
+			appr_subject = #{appr_subject, jdbcType=VARCHAR},
+			appr_content = #{appr_content, jdbcType=VARCHAR}, 
+			appr_sign_date = #{appr_sign_date, jdbcType=VARCHAR},
+			appr_sign_state = #{appr_sign_state, jdbcType=DATE},
+			appr_sign_person = #{appr_sign_person, jdbcType=VARCHAR}
+		where appr_no = #{appr_no} 
+	</update>
+
+
+</mapper>
