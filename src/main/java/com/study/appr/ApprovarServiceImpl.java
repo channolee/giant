@@ -51,14 +51,6 @@ public class ApprovarServiceImpl implements ApprovarService{
 		return approvarDao.update(vo);
 	}
 
-	
-
-
-
-	
-
-	
-
 
 	/*
 	 * @Override public memberVO login(memberVO vo) { 

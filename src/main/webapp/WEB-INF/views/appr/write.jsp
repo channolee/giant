@@ -23,15 +23,15 @@
 		
 		var addSeq = '${appr_no}';
 		var addWriter = '${memberInfo.member_name}';
-		var addWriterId = '${memInfo.member_id}';
-		var memRank = '${memInfo.member_rank}';
+		var addWriterId = '${memberInfo.member_id}';
+		var memRank = '${memberInfo.member_rank}';
 		
 		var mofySeq = '${detailVO.appr_no}';
 		var mofyWriter = '${detailVO.writeName}';
 		var mofyWriterId = '${detailVO.appr_id}'
 		var mofyStatus = '${detailVO.appr_sign_state}';
 		
-		if(mofyStatus == 'wat'){
+		if(mofyStatus == 'wait'){
 			
 			$("#signWait").prop("checked",true);
 			
@@ -45,7 +45,7 @@
 			$("#signWait").prop("checked",true);
 			$("#signIng").prop("checked",true);
 			
-			if(memRank == 'ba'){
+			if(memRank == '1'){
 				$("#tmpBtn").hide();
 			}else{
 				$("#tmpBtn, #retBtn, #appBtn").hide();
@@ -55,7 +55,7 @@
 			$("input[name=sign]").prop("checked",true);
 			$("#tmpBtn, #retBtn, #appBtn").hide();
 			
-		}else if( mofyStatus == 'tmp'){
+		}else if( mofyStatus == 'save'){
 			if(addWriterId == mofyWriterId){
 				$("#retBtn").hide();
 			}
@@ -98,9 +98,9 @@
 			var grade = '${memberInfo.member_rank}';
 			if(stat == 'app'){
 				if(grade == '4'){
-					$("#status").val('wat');
+					$("#status").val('wait');
 				}else if(grade == '3'){
-					$("#status").val('wat');
+					$("#status").val('wait');
 				}else if(grade == '2'){
 					$("#status").val('ing');
 				}else if(grade == '1'){
@@ -172,7 +172,7 @@
 </form>
 <div>
 
-	<input type = "button" name = "tmpBtn" id = "tmpBtn" value = "임시저장" onclick = "fncSave('tmp')">
+	<input type = "button" name = "tmpBtn" id = "tmpBtn" value = "임시저장" onclick = "fncSave('save')">
 	<input type = "button" name = "retBtn" id = "retBtn" value = "반려" onclick = "fncSave('ret')">
 	<input type = "button" name = "appBtn" id = "appBtn" value = "결재" onclick = "fncSave('app')">
 </div>

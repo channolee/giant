@@ -72,7 +72,6 @@ public class ApprovarController {
 	 * memberVO login = approvarService.login(vo);
 	 * 
 	 * return "appr/list"; }
-	 * 에베베베벱베베ㅔ
 	 */
 	
 	@RequestMapping("logout")
@@ -85,9 +84,7 @@ public class ApprovarController {
 	
 	//리스트 메인 페이지
 	@RequestMapping("list")
-	public String list(@ModelAttribute approvalVO vo, Model model, HttpSession session) {
-	
-		
+	public String list(@ModelAttribute approvalVO vo, Model model, HttpSession session) {	
 		
 		List<approvalVO> list = new ArrayList<approvalVO>();
 		list = approvarService.list(vo);
@@ -125,29 +122,15 @@ public class ApprovarController {
 	
 	@RequestMapping("writeProc")
 	public String writeProc(@ModelAttribute approvalVO vo, HttpSession session) {
-
-//			int seq = sqlSession.selectOne("mapper.dataChk", map.get("seq").toString());
-			
+		
+		int appr_no = approvarService.seq();
+		
 		approvalVO memberInfo = (approvalVO)session.getAttribute("memberInfo");
-			
-			
-			map.put("memberInfo", memberInfo);
-			String rank = memberInfo.get("member_rank").toString();
-			String aChk = "Y";
-			if((!"save".equals(map.get("status").toString())) && ("1".equals(rank) || "2".equals(rank))){
-				map.put("appChk", aChk);
-			}
-			
-			
-			
-			if(seq == 0) {
-				sqlSession.insert("mapper.insert", map);
-			}else {
-				sqlSession.update("mapper.update", map);
-			}
-			
-			sqlSession.insert("mapper.history", map);
-				
+		
+		vo.setMemberInfo("memberInfo", memberInfo);
+		String rank = memberInfo.get("member_rank").toString();
+		String aChk = "Y";
+		
 			return "redirect:list";
 	}
 	
